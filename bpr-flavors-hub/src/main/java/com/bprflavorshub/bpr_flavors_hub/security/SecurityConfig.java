@@ -124,6 +124,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // =================================================
+                        // ROOT / HEALTH CHECK
+                        // =================================================
+
+                        .requestMatchers(
+                                "/",
+                                "/error"
+                        ).permitAll()
+
+                        // =================================================
                         // OPTIONS / CORS PREFLIGHT
                         // =================================================
 
@@ -141,7 +150,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // =================================================
-                        // PUBLIC RESTAURANTS
+                        // PUBLIC RESTAURANTS - GET
                         // =================================================
 
                         .requestMatchers(
@@ -151,7 +160,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // =================================================
-                        // PUBLIC FOODS
+                        // PUBLIC FOODS - GET
                         // =================================================
 
                         .requestMatchers(
@@ -162,14 +171,6 @@ public class SecurityConfig {
 
                         // =================================================
                         // SUPPORT - ADMIN
-                        //
-                        // Admin can:
-                        // - View all tickets
-                        // - View ticket details
-                        // - Reply
-                        // - Change status
-                        // - Resolve
-                        // - Close
                         // =================================================
 
                         .requestMatchers(
@@ -178,11 +179,6 @@ public class SecurityConfig {
 
                         // =================================================
                         // SUPPORT - CUSTOMER + RESTAURANT OWNER
-                        //
-                        // Customers and restaurant owners can:
-                        // - Create tickets
-                        // - View their own tickets
-                        // - Reply to their tickets
                         // =================================================
 
                         .requestMatchers(
