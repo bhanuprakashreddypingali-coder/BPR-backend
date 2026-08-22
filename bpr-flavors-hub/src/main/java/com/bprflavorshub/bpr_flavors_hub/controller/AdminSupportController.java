@@ -1,44 +1,51 @@
 package com.bprflavorshub.bpr_flavors_hub.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
 import com.bprflavorshub.bpr_flavors_hub.dto.support.SupportMessageRequest;
 import com.bprflavorshub.bpr_flavors_hub.dto.support.SupportMessageResponse;
 import com.bprflavorshub.bpr_flavors_hub.dto.support.SupportTicketResponse;
-import com.bprflavorshub.bpr_flavors_hub.dto.support.UpdateSupportTicketRequest;
 import com.bprflavorshub.bpr_flavors_hub.entity.User;
 import com.bprflavorshub.bpr_flavors_hub.repository.UserRepository;
 import com.bprflavorshub.bpr_flavors_hub.service.SupportService;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/admin/support")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminSupportController {
 
     private final SupportService supportService;
     private final UserRepository userRepository;
 
     // =========================================================
-    // GET ALL SUPPORT TICKETS
+    // GET ALL TICKETS
     // =========================================================
 
-    @GetMapping("/tickets")
-    public ResponseEntity<List<SupportTicketResponse>> getAllTickets(
-            @RequestParam(required = false) String status
+    @GetMapping
+    public ResponseEntity<List<SupportTicketResponse>> getAllTickets() {
+
+        return ResponseEntity.ok(
+                supportService.getAllTickets()
+        );
+    }
+
+    // =========================================================
+    // GET TICKETS BY STATUS
+    // =========================================================
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<SupportTicketResponse>> getTicketsByStatus(
+            @PathVariable String status
     ) {
-
-        if (status == null || status.trim().isEmpty()) {
-
-            return ResponseEntity.ok(
-                    supportService.getAllTickets()
-            );
-        }
 
         return ResponseEntity.ok(
                 supportService.getTicketsByStatus(status)
@@ -46,32 +53,32 @@ public class AdminSupportController {
     }
 
     // =========================================================
-    // GET SINGLE SUPPORT TICKET
+    // GET SINGLE TICKET
     // =========================================================
 
-    @GetMapping("/tickets/{ticketId}")
+    @GetMapping("/{ticketId}")
     public ResponseEntity<SupportTicketResponse> getTicket(
             @PathVariable Long ticketId
     ) {
 
         return ResponseEntity.ok(
-                supportService.getAdminTicket(ticketId)
+                supportService.getTicketById(ticketId)
         );
     }
 
     // =========================================================
-    // ADMIN REPLY TO TICKET
+    // ADMIN REPLY
     // =========================================================
 
-    @PostMapping("/tickets/{ticketId}/messages")
-    public ResponseEntity<SupportMessageResponse> addMessage(
+    @PostMapping("/{ticketId}/messages")
+    public ResponseEntity<SupportMessageResponse> replyTicket(
             Authentication authentication,
             @PathVariable Long ticketId,
             @RequestBody SupportMessageRequest request
     ) {
 
         Long adminId =
-                getAuthenticatedAdminId(authentication);
+                getAuthenticatedUserId(authentication);
 
         return ResponseEntity.ok(
                 supportService.addAdminMessage(
@@ -83,20 +90,46 @@ public class AdminSupportController {
     }
 
     // =========================================================
-    // ADMIN UPDATE / RESOLVE / CLOSE
+    // CLOSE
     // =========================================================
 
-    @PutMapping("/tickets/{ticketId}")
-    public ResponseEntity<SupportTicketResponse> updateTicket(
-            @PathVariable Long ticketId,
-            @RequestBody UpdateSupportTicketRequest request
+    @PutMapping("/{ticketId}/close")
+    public ResponseEntity<SupportTicketResponse> closeTicket(
+            @PathVariable Long ticketId
     ) {
 
         return ResponseEntity.ok(
-                supportService.updateTicket(
-                        ticketId,
-                        request
-                )
+                supportService.closeTicket(ticketId)
+        );
+    }
+
+    // =========================================================
+    // REOPEN
+    // =========================================================
+
+    @PutMapping("/{ticketId}/reopen")
+    public ResponseEntity<SupportTicketResponse> reopenTicket(
+            @PathVariable Long ticketId
+    ) {
+
+        return ResponseEntity.ok(
+                supportService.reopenTicket(ticketId)
+        );
+    }
+
+    // =========================================================
+    // DELETE
+    // =========================================================
+
+    @DeleteMapping("/{ticketId}")
+    public ResponseEntity<String> deleteTicket(
+            @PathVariable Long ticketId
+    ) {
+
+        supportService.deleteTicket(ticketId);
+
+        return ResponseEntity.ok(
+                "Support ticket deleted successfully."
         );
     }
 
@@ -104,7 +137,7 @@ public class AdminSupportController {
     // GET AUTHENTICATED ADMIN ID
     // =========================================================
 
-    private Long getAuthenticatedAdminId(
+    private Long getAuthenticatedUserId(
             Authentication authentication
     ) {
 
@@ -117,43 +150,18 @@ public class AdminSupportController {
             );
         }
 
-        /*
-         * IMPORTANT:
-         *
-         * Your JWT uses PHONE as the authenticated username.
-         *
-         * Example:
-         *
-         * AUTH USER : 9391902028
-         *
-         * So we must find the admin by PHONE,
-         * not by EMAIL.
-         */
-
         String phone =
                 authentication.getName().trim();
 
-        User admin =
+        User user =
                 userRepository
                         .findByPhone(phone)
                         .orElseThrow(() ->
                                 new RuntimeException(
-                                        "Admin user not found"
+                                        "Authenticated admin not found"
                                 )
                         );
 
-        // Extra safety check
-        if (admin.getRole() == null ||
-                !admin.getRole()
-                        .toString()
-                        .replace("ROLE_", "")
-                        .equalsIgnoreCase("ADMIN")) {
-
-            throw new RuntimeException(
-                    "Authenticated user is not an admin"
-            );
-        }
-
-        return admin.getId();
+        return user.getId();
     }
 }

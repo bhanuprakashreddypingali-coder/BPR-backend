@@ -31,6 +31,7 @@ public class SupportServiceImpl implements SupportService {
     private final UserRepository userRepository;
 
     // =========================================================
+    // CUSTOMER / OWNER
     // CREATE SUPPORT TICKET
     // =========================================================
 
@@ -44,7 +45,8 @@ public class SupportServiceImpl implements SupportService {
 
         validateTicketRequest(request);
 
-        String priority = normalizePriority(request.getPriority());
+        String priority =
+                normalizePriority(request.getPriority());
 
         SupportTicket ticket = SupportTicket.builder()
                 .user(user)
@@ -54,19 +56,24 @@ public class SupportServiceImpl implements SupportService {
                 .priority(priority)
                 .status("OPEN")
                 .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         SupportTicket savedTicket =
                 supportTicketRepository.save(ticket);
 
-        // Create first message automatically
-        SupportMessage firstMessage = SupportMessage.builder()
-                .ticket(savedTicket)
-                .sender(user)
-                .message(request.getDescription().trim())
-                .senderRole(getUserRole(user))
-                .createdAt(LocalDateTime.now())
-                .build();
+        // =====================================================
+        // FIRST MESSAGE
+        // =====================================================
+
+        SupportMessage firstMessage =
+                SupportMessage.builder()
+                        .ticket(savedTicket)
+                        .sender(user)
+                        .message(request.getDescription().trim())
+                        .senderRole(getUserRole(user))
+                        .createdAt(LocalDateTime.now())
+                        .build();
 
         supportMessageRepository.save(firstMessage);
 
@@ -74,6 +81,7 @@ public class SupportServiceImpl implements SupportService {
     }
 
     // =========================================================
+    // CUSTOMER / OWNER
     // GET MY TICKETS
     // =========================================================
 
@@ -93,7 +101,8 @@ public class SupportServiceImpl implements SupportService {
     }
 
     // =========================================================
-    // GET MY SINGLE TICKET
+    // CUSTOMER / OWNER
+    // GET SINGLE TICKET
     // =========================================================
 
     @Override
@@ -107,7 +116,9 @@ public class SupportServiceImpl implements SupportService {
 
         SupportTicket ticket = getTicket(ticketId);
 
-        if (!ticket.getUser().getId().equals(user.getId())) {
+        if (ticket.getUser() == null ||
+                !ticket.getUser().getId().equals(user.getId())) {
+
             throw new RuntimeException(
                     "You are not allowed to view this ticket"
             );
@@ -117,7 +128,8 @@ public class SupportServiceImpl implements SupportService {
     }
 
     // =========================================================
-    // USER REPLY
+    // CUSTOMER / OWNER
+    // ADD MESSAGE
     // =========================================================
 
     @Override
@@ -131,7 +143,9 @@ public class SupportServiceImpl implements SupportService {
 
         SupportTicket ticket = getTicket(ticketId);
 
-        if (!ticket.getUser().getId().equals(user.getId())) {
+        if (ticket.getUser() == null ||
+                !ticket.getUser().getId().equals(user.getId())) {
+
             throw new RuntimeException(
                     "You are not allowed to reply to this ticket"
             );
@@ -140,18 +154,20 @@ public class SupportServiceImpl implements SupportService {
         validateMessage(request);
 
         if ("CLOSED".equalsIgnoreCase(ticket.getStatus())) {
+
             throw new RuntimeException(
                     "This ticket is already closed"
             );
         }
 
-        SupportMessage message = SupportMessage.builder()
-                .ticket(ticket)
-                .sender(user)
-                .message(request.getMessage().trim())
-                .senderRole(getUserRole(user))
-                .createdAt(LocalDateTime.now())
-                .build();
+        SupportMessage message =
+                SupportMessage.builder()
+                        .ticket(ticket)
+                        .sender(user)
+                        .message(request.getMessage().trim())
+                        .senderRole(getUserRole(user))
+                        .createdAt(LocalDateTime.now())
+                        .build();
 
         SupportMessage savedMessage =
                 supportMessageRepository.save(message);
@@ -168,7 +184,8 @@ public class SupportServiceImpl implements SupportService {
     }
 
     // =========================================================
-    // ADMIN - GET ALL TICKETS
+    // ADMIN
+    // GET ALL TICKETS
     // =========================================================
 
     @Override
@@ -183,16 +200,17 @@ public class SupportServiceImpl implements SupportService {
     }
 
     // =========================================================
-    // ADMIN - GET TICKETS BY STATUS
+    // ADMIN
+    // GET TICKETS BY STATUS
     // =========================================================
 
-    @Override
-    @Transactional(readOnly = true)
     public List<SupportTicketResponse> getTicketsByStatus(
             String status
     ) {
 
-        if (status == null || status.trim().isEmpty()) {
+        if (status == null ||
+                status.trim().isEmpty()) {
+
             return getAllTickets();
         }
 
@@ -202,29 +220,34 @@ public class SupportServiceImpl implements SupportService {
         validateStatus(normalizedStatus);
 
         return supportTicketRepository
-                .findByStatusOrderByCreatedAtDesc(normalizedStatus)
+                .findByStatusOrderByCreatedAtDesc(
+                        normalizedStatus
+                )
                 .stream()
                 .map(this::convertToResponse)
                 .toList();
     }
 
     // =========================================================
-    // ADMIN - GET SINGLE TICKET
+    // ADMIN
+    // GET SINGLE TICKET
     // =========================================================
 
     @Override
     @Transactional(readOnly = true)
-    public SupportTicketResponse getAdminTicket(
+    public SupportTicketResponse getTicketById(
             Long ticketId
     ) {
 
-        SupportTicket ticket = getTicket(ticketId);
+        SupportTicket ticket =
+                getTicket(ticketId);
 
         return convertToResponse(ticket);
     }
 
     // =========================================================
-    // ADMIN REPLY
+    // ADMIN
+    // REPLY TO TICKET
     // =========================================================
 
     @Override
@@ -236,23 +259,26 @@ public class SupportServiceImpl implements SupportService {
 
         User admin = getUser(adminId);
 
-        SupportTicket ticket = getTicket(ticketId);
+        SupportTicket ticket =
+                getTicket(ticketId);
 
         validateMessage(request);
 
         if ("CLOSED".equalsIgnoreCase(ticket.getStatus())) {
+
             throw new RuntimeException(
                     "This ticket is already closed"
             );
         }
 
-        SupportMessage message = SupportMessage.builder()
-                .ticket(ticket)
-                .sender(admin)
-                .message(request.getMessage().trim())
-                .senderRole("ADMIN")
-                .createdAt(LocalDateTime.now())
-                .build();
+        SupportMessage message =
+                SupportMessage.builder()
+                        .ticket(ticket)
+                        .sender(admin)
+                        .message(request.getMessage().trim())
+                        .senderRole("ADMIN")
+                        .createdAt(LocalDateTime.now())
+                        .build();
 
         SupportMessage savedMessage =
                 supportMessageRepository.save(message);
@@ -266,26 +292,28 @@ public class SupportServiceImpl implements SupportService {
     }
 
     // =========================================================
-    // ADMIN - UPDATE TICKET
+    // ADMIN
+    // UPDATE TICKET
     // =========================================================
 
-    @Override
     public SupportTicketResponse updateTicket(
             Long ticketId,
             UpdateSupportTicketRequest request
     ) {
 
         if (request == null) {
+
             throw new RuntimeException(
                     "Update request cannot be null"
             );
         }
 
-        SupportTicket ticket = getTicket(ticketId);
+        SupportTicket ticket =
+                getTicket(ticketId);
 
-        // -------------------------
+        // =====================================================
         // STATUS
-        // -------------------------
+        // =====================================================
 
         if (request.getStatus() != null &&
                 !request.getStatus().trim().isEmpty()) {
@@ -300,22 +328,31 @@ public class SupportServiceImpl implements SupportService {
             ticket.setStatus(status);
 
             if ("RESOLVED".equals(status)) {
-                ticket.setResolvedAt(LocalDateTime.now());
+
+                ticket.setResolvedAt(
+                        LocalDateTime.now()
+                );
             }
 
             if ("CLOSED".equals(status)) {
 
                 if (ticket.getResolvedAt() == null) {
+
                     ticket.setResolvedAt(
                             LocalDateTime.now()
                     );
                 }
             }
+
+            if ("OPEN".equals(status)) {
+
+                ticket.setResolvedAt(null);
+            }
         }
 
-        // -------------------------
+        // =====================================================
         // PRIORITY
-        // -------------------------
+        // =====================================================
 
         if (request.getPriority() != null &&
                 !request.getPriority().trim().isEmpty()) {
@@ -327,9 +364,9 @@ public class SupportServiceImpl implements SupportService {
             );
         }
 
-        // -------------------------
+        // =====================================================
         // RESOLUTION
-        // -------------------------
+        // =====================================================
 
         if (request.getResolution() != null) {
 
@@ -347,18 +384,113 @@ public class SupportServiceImpl implements SupportService {
     }
 
     // =========================================================
+    // ADMIN
+    // CLOSE TICKET
+    // =========================================================
+
+    @Override
+    public SupportTicketResponse closeTicket(
+            Long ticketId
+    ) {
+
+        SupportTicket ticket =
+                getTicket(ticketId);
+
+        ticket.setStatus("CLOSED");
+
+        if (ticket.getResolvedAt() == null) {
+
+            ticket.setResolvedAt(
+                    LocalDateTime.now()
+            );
+        }
+
+        ticket.setUpdatedAt(
+                LocalDateTime.now()
+        );
+
+        SupportTicket savedTicket =
+                supportTicketRepository.save(ticket);
+
+        return convertToResponse(savedTicket);
+    }
+
+    // =========================================================
+    // ADMIN
+    // REOPEN TICKET
+    // =========================================================
+
+    @Override
+    public SupportTicketResponse reopenTicket(
+            Long ticketId
+    ) {
+
+        SupportTicket ticket =
+                getTicket(ticketId);
+
+        ticket.setStatus("OPEN");
+        ticket.setResolvedAt(null);
+        ticket.setUpdatedAt(
+                LocalDateTime.now()
+        );
+
+        SupportTicket savedTicket =
+                supportTicketRepository.save(ticket);
+
+        return convertToResponse(savedTicket);
+    }
+
+    // =========================================================
+    // ADMIN
+    // DELETE TICKET
+    // =========================================================
+
+    @Override
+    public void deleteTicket(
+            Long ticketId
+    ) {
+
+        SupportTicket ticket =
+                getTicket(ticketId);
+
+        /*
+         * Delete messages first so that the operation
+         * also works when the database has a foreign-key
+         * relationship from support_messages to support_tickets.
+         */
+
+        List<SupportMessage> messages =
+                supportMessageRepository
+                        .findByTicketIdOrderByCreatedAtAsc(
+                                ticketId
+                        );
+
+        if (!messages.isEmpty()) {
+
+            supportMessageRepository
+                    .deleteAll(messages);
+        }
+
+        supportTicketRepository.delete(ticket);
+    }
+
+    // =========================================================
     // GET USER
     // =========================================================
 
-    private User getUser(Long userId) {
+    private User getUser(
+            Long userId
+    ) {
 
         if (userId == null) {
+
             throw new RuntimeException(
                     "User ID cannot be null"
             );
         }
 
-        return userRepository.findById(userId)
+        return userRepository
+                .findById(userId)
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "User not found"
@@ -370,15 +502,19 @@ public class SupportServiceImpl implements SupportService {
     // GET TICKET
     // =========================================================
 
-    private SupportTicket getTicket(Long ticketId) {
+    private SupportTicket getTicket(
+            Long ticketId
+    ) {
 
         if (ticketId == null) {
+
             throw new RuntimeException(
                     "Ticket ID cannot be null"
             );
         }
 
-        return supportTicketRepository.findById(ticketId)
+        return supportTicketRepository
+                .findById(ticketId)
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Support ticket not found"
@@ -395,6 +531,7 @@ public class SupportServiceImpl implements SupportService {
     ) {
 
         if (request == null) {
+
             throw new RuntimeException(
                     "Ticket request cannot be null"
             );
@@ -434,6 +571,7 @@ public class SupportServiceImpl implements SupportService {
     ) {
 
         if (request == null) {
+
             throw new RuntimeException(
                     "Message request cannot be null"
             );
@@ -452,7 +590,9 @@ public class SupportServiceImpl implements SupportService {
     // VALIDATE STATUS
     // =========================================================
 
-    private void validateStatus(String status) {
+    private void validateStatus(
+            String status
+    ) {
 
         if (!List.of(
                 "OPEN",
@@ -503,9 +643,13 @@ public class SupportServiceImpl implements SupportService {
     // GET USER ROLE
     // =========================================================
 
-    private String getUserRole(User user) {
+    private String getUserRole(
+            User user
+    ) {
 
-        if (user == null || user.getRole() == null) {
+        if (user == null ||
+                user.getRole() == null) {
+
             return "USER";
         }
 

@@ -1,14 +1,16 @@
 package com.bprflavorshub.bpr_flavors_hub.service;
 
+import java.util.List;
+
 import com.bprflavorshub.bpr_flavors_hub.dto.support.CreateSupportTicketRequest;
 import com.bprflavorshub.bpr_flavors_hub.dto.support.SupportMessageRequest;
 import com.bprflavorshub.bpr_flavors_hub.dto.support.SupportMessageResponse;
 import com.bprflavorshub.bpr_flavors_hub.dto.support.SupportTicketResponse;
 import com.bprflavorshub.bpr_flavors_hub.dto.support.UpdateSupportTicketRequest;
 
-import java.util.List;
-
 public interface SupportService {
+
+    // CUSTOMER / OWNER
 
     SupportTicketResponse createTicket(
             Long userId,
@@ -30,13 +32,15 @@ public interface SupportService {
             SupportMessageRequest request
     );
 
+    // ADMIN
+
     List<SupportTicketResponse> getAllTickets();
 
     List<SupportTicketResponse> getTicketsByStatus(
             String status
     );
 
-    SupportTicketResponse getAdminTicket(
+    SupportTicketResponse getTicketById(
             Long ticketId
     );
 
@@ -49,5 +53,17 @@ public interface SupportService {
     SupportTicketResponse updateTicket(
             Long ticketId,
             UpdateSupportTicketRequest request
+    );
+
+    SupportTicketResponse closeTicket(
+            Long ticketId
+    );
+
+    SupportTicketResponse reopenTicket(
+            Long ticketId
+    );
+
+    void deleteTicket(
+            Long ticketId
     );
 }
