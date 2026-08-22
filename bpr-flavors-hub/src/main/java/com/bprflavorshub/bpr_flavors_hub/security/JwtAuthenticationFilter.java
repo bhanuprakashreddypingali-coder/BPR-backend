@@ -16,7 +16,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter
+        extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
@@ -43,9 +44,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 request.getMethod();
 
         System.out.println();
-        System.out.println("-------------------------------------------------");
+        System.out.println(
+                "================================================="
+        );
+
         System.out.println("JWT FILTER");
-        System.out.println("Method : " + method);
+        System.out.println("METHOD : " + method);
         System.out.println("URI    : " + requestUri);
 
         // =========================================================
@@ -56,21 +60,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 request.getHeader("Authorization");
 
         // =========================================================
-        // NO AUTHORIZATION HEADER
+        // NO JWT
         // =========================================================
 
         if (authHeader == null ||
                 authHeader.trim().isEmpty()) {
 
             System.out.println(
-                    "JWT STATUS : Authorization header is MISSING"
+                    "JWT : Authorization header NOT FOUND"
             );
 
             System.out.println(
-                    "JWT RESULT : Request continues WITHOUT authentication"
+                    "JWT : Continuing as unauthenticated request"
             );
 
-            System.out.println("-------------------------------------------------");
+            System.out.println(
+                    "================================================="
+            );
 
             filterChain.doFilter(
                     request,
@@ -81,24 +87,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // =========================================================
-        // WRONG AUTHORIZATION FORMAT
+        // INVALID HEADER
         // =========================================================
 
         if (!authHeader.startsWith("Bearer ")) {
 
             System.out.println(
-                    "JWT STATUS : Authorization header exists"
+                    "JWT : Invalid Authorization header format"
             );
 
             System.out.println(
-                    "JWT ERROR  : Header does NOT start with 'Bearer '"
+                    "JWT : Expected Bearer <token>"
             );
 
             System.out.println(
-                    "JWT HEADER : " + authHeader
+                    "================================================="
             );
-
-            System.out.println("-------------------------------------------------");
 
             filterChain.doFilter(
                     request,
@@ -118,10 +122,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token.isEmpty()) {
 
             System.out.println(
-                    "JWT ERROR : Bearer token is EMPTY"
+                    "JWT : Empty token"
             );
 
-            System.out.println("-------------------------------------------------");
+            SecurityContextHolder.clearContext();
 
             filterChain.doFilter(
                     request,
@@ -132,7 +136,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         System.out.println(
-                "JWT STATUS : Bearer token received"
+                "JWT : Bearer token received"
         );
 
         try {
@@ -145,14 +149,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     jwtService.extractUsername(token);
 
             System.out.println(
-                    "JWT PHONE  : " + phone
+                    "JWT PHONE : " + phone
             );
 
             if (phone == null ||
                     phone.trim().isEmpty()) {
 
                 System.out.println(
-                        "JWT ERROR  : Could not extract phone from token"
+                        "JWT ERROR : Username/phone not found"
                 );
 
                 SecurityContextHolder.clearContext();
@@ -166,7 +170,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // =====================================================
-            // ALREADY AUTHENTICATED
+            // CHECK EXISTING AUTHENTICATION
             // =====================================================
 
             if (SecurityContextHolder
@@ -174,18 +178,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .getAuthentication() != null) {
 
                 System.out.println(
-                        "JWT STATUS : SecurityContext already contains authentication"
+                        "JWT : SecurityContext already authenticated"
                 );
-
-                System.out.println(
-                        "AUTH USER  : "
-                                + SecurityContextHolder
-                                        .getContext()
-                                        .getAuthentication()
-                                        .getName()
-                );
-
-                System.out.println("-------------------------------------------------");
 
                 filterChain.doFilter(
                         request,
@@ -200,7 +194,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // =====================================================
 
             System.out.println(
-                    "USER LOAD   : Loading user by phone..."
+                    "USER : Loading user by phone..."
             );
 
             UserDetails userDetails =
@@ -210,7 +204,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (userDetails == null) {
 
                 System.out.println(
-                        "USER ERROR  : UserDetails is NULL"
+                        "USER ERROR : UserDetails is NULL"
                 );
 
                 SecurityContextHolder.clearContext();
@@ -224,7 +218,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             System.out.println(
-                    "USER FOUND  : "
+                    "USER FOUND : "
                             + userDetails.getUsername()
             );
 
@@ -250,7 +244,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (!valid) {
 
                 System.out.println(
-                        "JWT ERROR   : Token is INVALID or EXPIRED"
+                        "JWT ERROR : Token invalid or expired"
                 );
 
                 SecurityContextHolder.clearContext();
@@ -289,18 +283,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             authentication
                     );
 
+            // =====================================================
+            // DEBUG INFORMATION
+            // =====================================================
+
             System.out.println(
                     "AUTHENTICATION : SUCCESS"
             );
 
             System.out.println(
-                    "AUTH USER      : "
+                    "AUTH USER : "
                             + authentication.getName()
             );
 
             System.out.println(
-                    "AUTH AUTHORITIES: "
+                    "AUTH AUTHORITIES : "
                             + authentication.getAuthorities()
+            );
+
+            System.out.println(
+                    "AUTHENTICATED : "
+                            + authentication.isAuthenticated()
             );
 
         } catch (Exception e) {
@@ -311,16 +314,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             );
 
             System.out.println(
-                    "Request URI : " + requestUri
+                    "REQUEST URI : " + requestUri
             );
 
             System.out.println(
-                    "Exception   : "
+                    "EXCEPTION : "
                             + e.getClass().getName()
             );
 
             System.out.println(
-                    "Message     : "
+                    "MESSAGE : "
                             + e.getMessage()
             );
 
@@ -333,10 +336,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         System.out.println(
-                "JWT FILTER : Continuing request"
+                "JWT FILTER : Request continuing"
         );
 
-        System.out.println("-------------------------------------------------");
+        System.out.println(
+                "================================================="
+        );
 
         filterChain.doFilter(
                 request,
