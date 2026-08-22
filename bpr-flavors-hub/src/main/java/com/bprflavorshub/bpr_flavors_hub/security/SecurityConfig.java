@@ -55,9 +55,7 @@ public class SecurityConfig {
         DaoAuthenticationProvider provider =
                 new DaoAuthenticationProvider(userDetailsService);
 
-        provider.setPasswordEncoder(
-                passwordEncoder()
-        );
+        provider.setPasswordEncoder(passwordEncoder());
 
         return provider;
     }
@@ -84,7 +82,6 @@ public class SecurityConfig {
             throws Exception {
 
         http
-
                 // =====================================================
                 // CSRF
                 // =====================================================
@@ -126,7 +123,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // =================================================
-                        // ROOT
+                        // ROOT / ERROR
                         // =================================================
 
                         .requestMatchers(
@@ -172,16 +169,6 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // =================================================
-                        // PUBLIC REVIEW GET REQUESTS
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/reviews/restaurant/**",
-                                "/api/reviews/food/**"
-                        ).permitAll()
-
-                        // =================================================
                         // ADMIN SUPPORT
                         // =================================================
 
@@ -209,7 +196,7 @@ public class SecurityConfig {
                         ).hasRole("ADMIN")
 
                         // =================================================
-                        // OWNER
+                        // RESTAURANT OWNER
                         // =================================================
 
                         .requestMatchers(
@@ -280,7 +267,7 @@ public class SecurityConfig {
                         ).authenticated()
 
                         // =================================================
-                        // RESTAURANT CREATE
+                        // RESTAURANT WRITE OPERATIONS
                         // =================================================
 
                         .requestMatchers(
@@ -288,18 +275,10 @@ public class SecurityConfig {
                                 "/api/restaurants/**"
                         ).hasRole("RESTAURANT_OWNER")
 
-                        // =================================================
-                        // RESTAURANT UPDATE
-                        // =================================================
-
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/restaurants/**"
                         ).hasRole("RESTAURANT_OWNER")
-
-                        // =================================================
-                        // RESTAURANT DELETE
-                        // =================================================
 
                         .requestMatchers(
                                 HttpMethod.DELETE,
@@ -307,7 +286,7 @@ public class SecurityConfig {
                         ).hasRole("RESTAURANT_OWNER")
 
                         // =================================================
-                        // FOOD CREATE
+                        // FOOD WRITE OPERATIONS
                         // =================================================
 
                         .requestMatchers(
@@ -315,18 +294,10 @@ public class SecurityConfig {
                                 "/api/foods/**"
                         ).hasRole("RESTAURANT_OWNER")
 
-                        // =================================================
-                        // FOOD UPDATE
-                        // =================================================
-
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/foods/**"
                         ).hasRole("RESTAURANT_OWNER")
-
-                        // =================================================
-                        // FOOD DELETE
-                        // =================================================
 
                         .requestMatchers(
                                 HttpMethod.DELETE,
@@ -364,15 +335,17 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(
                 Arrays.asList(
+
+                        // Local development
                         "http://localhost:5173",
                         "http://localhost:5174",
-                        "http://localhost:3000"
+                        "http://localhost:3000",
 
-                        // IMPORTANT:
-                        // Add your deployed frontend URL here
-                        //
-                        // Example:
-                        // "https://bpr-flavors-hub.vercel.app"
+                        // Vercel production
+                        "https://bpr-project-q8til6zvu-bhanu-8cc0.vercel.app",
+
+                        // Vercel project domain
+                        "https://bpr-project-fc76ya2r0-bhanu-8cc0.vercel.app"
                 )
         );
 
