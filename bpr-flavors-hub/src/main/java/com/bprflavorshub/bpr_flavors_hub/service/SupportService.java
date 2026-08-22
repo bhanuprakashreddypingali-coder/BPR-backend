@@ -10,29 +10,33 @@ import com.bprflavorshub.bpr_flavors_hub.dto.support.UpdateSupportTicketRequest;
 
 public interface SupportService {
 
+    // =========================================================
     // CUSTOMER / OWNER
+    // =========================================================
 
     SupportTicketResponse createTicket(
-            Long userId,
+            String username,
             CreateSupportTicketRequest request
     );
 
     List<SupportTicketResponse> getMyTickets(
-            Long userId
+            String username
     );
 
     SupportTicketResponse getMyTicket(
-            Long userId,
+            String username,
             Long ticketId
     );
 
     SupportMessageResponse addUserMessage(
-            Long userId,
+            String username,
             Long ticketId,
             SupportMessageRequest request
     );
 
+    // =========================================================
     // ADMIN
+    // =========================================================
 
     List<SupportTicketResponse> getAllTickets();
 
@@ -45,7 +49,7 @@ public interface SupportService {
     );
 
     SupportMessageResponse addAdminMessage(
-            Long adminId,
+            String adminUsername,
             Long ticketId,
             SupportMessageRequest request
     );
