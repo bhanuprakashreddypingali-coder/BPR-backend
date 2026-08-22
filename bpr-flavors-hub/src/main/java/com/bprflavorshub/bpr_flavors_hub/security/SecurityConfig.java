@@ -82,6 +82,7 @@ public class SecurityConfig {
             throws Exception {
 
         http
+
                 // =====================================================
                 // CSRF
                 // =====================================================
@@ -333,6 +334,10 @@ public class SecurityConfig {
         CorsConfiguration configuration =
                 new CorsConfiguration();
 
+        // =========================================================
+        // ALLOWED ORIGINS
+        // =========================================================
+
         configuration.setAllowedOrigins(
                 Arrays.asList(
 
@@ -341,13 +346,18 @@ public class SecurityConfig {
                         "http://localhost:5174",
                         "http://localhost:3000",
 
-                        // Vercel production
-                        "https://bpr-project-q8til6zvu-bhanu-8cc0.vercel.app",
+                        // Main Vercel production domain
+                        "https://bpr-project.vercel.app",
 
-                        // Vercel project domain
+                        // Vercel deployment domains
+                        "https://bpr-project-q8til6zvu-bhanu-8cc0.vercel.app",
                         "https://bpr-project-fc76ya2r0-bhanu-8cc0.vercel.app"
                 )
         );
+
+        // =========================================================
+        // ALLOWED METHODS
+        // =========================================================
 
         configuration.setAllowedMethods(
                 Arrays.asList(
@@ -360,6 +370,10 @@ public class SecurityConfig {
                 )
         );
 
+        // =========================================================
+        // ALLOWED HEADERS
+        // =========================================================
+
         configuration.setAllowedHeaders(
                 Arrays.asList(
                         "Authorization",
@@ -370,15 +384,31 @@ public class SecurityConfig {
                 )
         );
 
+        // =========================================================
+        // EXPOSED HEADERS
+        // =========================================================
+
         configuration.setExposedHeaders(
                 Arrays.asList(
                         "Authorization"
                 )
         );
 
+        // =========================================================
+        // CREDENTIALS
+        // =========================================================
+
         configuration.setAllowCredentials(false);
 
+        // =========================================================
+        // CACHE PREFLIGHT RESPONSE
+        // =========================================================
+
         configuration.setMaxAge(3600L);
+
+        // =========================================================
+        // REGISTER CORS FOR ALL ENDPOINTS
+        // =========================================================
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
