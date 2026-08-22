@@ -346,10 +346,14 @@ public class SecurityConfig {
                         "http://localhost:5174",
                         "http://localhost:3000",
 
-                        // Main Vercel production domain
+                        // Main Vercel domain
                         "https://bpr-project.vercel.app",
 
-                        // Vercel deployment domains
+                        // CURRENT VERCEL DEPLOYMENT
+                        "https://bpr-project-a0qbv2xy8-bhanu-8cc0.vercel.app",
+
+                        // Previous Vercel deployments
+                        "https://bpr-project-t3bu9aiq9-bhanu-8cc0.vercel.app",
                         "https://bpr-project-q8til6zvu-bhanu-8cc0.vercel.app",
                         "https://bpr-project-fc76ya2r0-bhanu-8cc0.vercel.app"
                 )
@@ -401,7 +405,7 @@ public class SecurityConfig {
         configuration.setAllowCredentials(false);
 
         // =========================================================
-        // CACHE PREFLIGHT RESPONSE
+        // PREFLIGHT CACHE
         // =========================================================
 
         configuration.setMaxAge(3600L);
