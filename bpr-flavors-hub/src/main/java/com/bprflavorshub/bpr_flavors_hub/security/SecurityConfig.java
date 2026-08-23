@@ -123,64 +123,43 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // =================================================
                         // ROOT / ERROR
-                        // =================================================
-
                         .requestMatchers(
                                 "/",
                                 "/error"
                         ).permitAll()
 
-                        // =================================================
                         // CORS PREFLIGHT
-                        // =================================================
-
                         .requestMatchers(
                                 HttpMethod.OPTIONS,
                                 "/**"
                         ).permitAll()
 
-                        // =================================================
                         // AUTH
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/auth/**"
                         ).permitAll()
 
-                        // =================================================
                         // PUBLIC RESTAURANTS
-                        // =================================================
-
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/restaurants",
                                 "/api/restaurants/**"
                         ).permitAll()
 
-                        // =================================================
                         // PUBLIC FOODS
-                        // =================================================
-
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/foods",
                                 "/api/foods/**"
                         ).permitAll()
 
-                        // =================================================
                         // ADMIN SUPPORT
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/admin/support/**"
                         ).hasRole("ADMIN")
 
-                        // =================================================
                         // CUSTOMER / OWNER SUPPORT
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/support/**"
                         ).hasAnyRole(
@@ -188,89 +167,59 @@ public class SecurityConfig {
                                 "RESTAURANT_OWNER"
                         )
 
-                        // =================================================
                         // ADMIN
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/admin/**"
                         ).hasRole("ADMIN")
 
-                        // =================================================
                         // RESTAURANT OWNER
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/owner/**"
                         ).hasRole("RESTAURANT_OWNER")
 
-                        // =================================================
                         // WISHLIST
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/wishlist",
                                 "/api/wishlist/**"
                         ).authenticated()
 
-                        // =================================================
                         // CART
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/cart",
                                 "/api/cart/**"
                         ).authenticated()
 
-                        // =================================================
                         // ORDERS
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/orders",
                                 "/api/orders/**"
                         ).authenticated()
 
-                        // =================================================
                         // FAVORITES
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/favorites",
                                 "/api/favorites/**"
                         ).authenticated()
 
-                        // =================================================
                         // REVIEWS
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/reviews",
                                 "/api/reviews/**"
                         ).authenticated()
 
-                        // =================================================
                         // ADDRESSES
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/addresses",
                                 "/api/addresses/**"
                         ).authenticated()
 
-                        // =================================================
                         // USERS
-                        // =================================================
-
                         .requestMatchers(
                                 "/api/users",
                                 "/api/users/**"
                         ).authenticated()
 
-                        // =================================================
                         // RESTAURANT WRITE OPERATIONS
-                        // =================================================
-
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/restaurants/**"
@@ -286,10 +235,7 @@ public class SecurityConfig {
                                 "/api/restaurants/**"
                         ).hasRole("RESTAURANT_OWNER")
 
-                        // =================================================
                         // FOOD WRITE OPERATIONS
-                        // =================================================
-
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/foods/**"
@@ -305,10 +251,7 @@ public class SecurityConfig {
                                 "/api/foods/**"
                         ).hasRole("RESTAURANT_OWNER")
 
-                        // =================================================
                         // EVERYTHING ELSE
-                        // =================================================
-
                         .anyRequest().authenticated()
                 )
 
@@ -341,18 +284,31 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(
                 Arrays.asList(
 
-                        // Local development
+                        // -----------------------------------------
+                        // LOCAL DEVELOPMENT
+                        // -----------------------------------------
+
                         "http://localhost:5173",
                         "http://localhost:5174",
                         "http://localhost:3000",
 
-                        // Main Vercel domain
+                        // -----------------------------------------
+                        // MAIN VERCEL DOMAIN
+                        // -----------------------------------------
+
                         "https://bpr-project.vercel.app",
 
+                        // -----------------------------------------
                         // CURRENT VERCEL DEPLOYMENT
-                        "https://bpr-project-a0qbv2xy8-bhanu-8cc0.vercel.app",
+                        // -----------------------------------------
 
-                        // Previous Vercel deployments
+                        "https://bpr-project-f5srxym59-bhanu-8cc0.vercel.app",
+
+                        // -----------------------------------------
+                        // PREVIOUS VERCEL DEPLOYMENTS
+                        // -----------------------------------------
+
+                        "https://bpr-project-a0qbv2xy8-bhanu-8cc0.vercel.app",
                         "https://bpr-project-t3bu9aiq9-bhanu-8cc0.vercel.app",
                         "https://bpr-project-q8til6zvu-bhanu-8cc0.vercel.app",
                         "https://bpr-project-fc76ya2r0-bhanu-8cc0.vercel.app"
